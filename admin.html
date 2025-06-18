@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>관리자 페이지 - 투표 결과</title>
+  <style>
+    body { font-family: 'Noto Sans KR', sans-serif; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    ul { list-style: none; padding: 0; }
+    li { font-size: 1.2rem; margin: 8px 0; }
+    #content { display: none; }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-app.js";
+    import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBk4LLdxRY-lNUBXGSOmwI1TQ4x2PU39nU",
+      authDomain: "summer-vote-41730.firebaseapp.com",
+      projectId: "summer-vote-41730",
+      storageBucket: "summer-vote-41730.appspot.com",
+      messagingSenderId: "489725461861",
+      appId: "1:489725461861:web:037ff9ee23eff483154d8c",
+      measurementId: "G-R6G6VFKPJL"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const votesCol = collection(db, "votes");
+
+    function updateResults(snapshot) {
+      const counts = {};
+      snapshot.forEach(doc => {
+        const candidate = doc.data().candidate;
+        counts[candidate] = (counts[candidate] || 0) + 1;
+      });
+
+      const resultsList = document.getElementById("results");
+      resultsList.innerHTML = "";
+      for (const [candidate, count] of Object.entries(counts)) {
+        const li = document.createElement("li");
+        li.textContent = `${candidate}: ${count}표`;
+        resultsList.appendChild(li);
+      }
+    }
+
+    function askPassword() {
+      const password = prompt("관리자 비밀번호를 입력하세요.");
+      if (password === "urssuadmin83") {  // 원하는 비밀번호로 변경하세요
+        document.getElementById("content").style.display = "block";
+        onSnapshot(votesCol, updateResults);
+      } else {
+        alert("비밀번호가 틀렸습니다.");
+        document.body.innerHTML = "<h2>접근 권한이 없습니다.</h2>";
+      }
+    }
+
+    window.onload = askPassword;
+  </script>
+</head>
+<body>
+  <div id="content" style="display:none;">
+    <h1>투표 결과 실시간 확인</h1>
+    <ul id="results">
+      <li>로딩 중...</li>
+    </ul>
+  </div>
+</body>
+</html>
